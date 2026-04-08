@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Light mode base */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+  min-height: 100vh;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Dark mode base */
+.dark body {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+/* Scrollbar — light */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Scrollbar — dark */
+.dark ::-webkit-scrollbar-track { background: #1e293b; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+/* Chat markdown — light */
+.chat-markdown h3 { font-size: 1rem; font-weight: 600; margin-top: 0.75rem; margin-bottom: 0.25rem; color: #0f172a; }
+.chat-markdown p  { margin-bottom: 0.5rem; line-height: 1.6; }
+.chat-markdown ul, .chat-markdown ol { margin-left: 1.25rem; margin-bottom: 0.5rem; }
+.chat-markdown li { margin-bottom: 0.25rem; }
+.chat-markdown strong { color: #0f172a; }
+.chat-markdown code { background: #e2e8f0; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.85em; color: #1e293b; }
+.chat-markdown table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
+.chat-markdown th, .chat-markdown td { padding: 0.375rem 0.75rem; border: 1px solid #e2e8f0; text-align: left; }
+.chat-markdown th { background: #f1f5f9; font-weight: 600; }
+
+/* Chat markdown — dark overrides */
+.dark .chat-markdown h3 { color: #f1f5f9; }
+.dark .chat-markdown strong { color: #f8fafc; }
+.dark .chat-markdown code { background: #334155; color: #e2e8f0; }
+.dark .chat-markdown th, .dark .chat-markdown td { border-color: #334155; }
+.dark .chat-markdown th { background: #1e293b; }
