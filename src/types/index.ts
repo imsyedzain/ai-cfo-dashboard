@@ -1,4 +1,68 @@
 // ============================================================
+// Enums — Type-safe constants for status values
+// ============================================================
+
+/**
+ * Possible roles for users in the system
+ */
+export enum UserRole {
+  Technician = 'technician',
+  Manager = 'manager',
+}
+
+/**
+ * Project lifecycle statuses
+ */
+export enum ProjectStatus {
+  Active = 'active',
+  Completed = 'completed',
+  OnHold = 'on_hold',
+}
+
+/**
+ * Trend direction indicators for KPIs
+ */
+export enum TrendDirection {
+  Up = 'up',
+  Down = 'down',
+  Neutral = 'neutral',
+}
+
+/**
+ * Types of anomalies detected in expense data
+ */
+export enum AnomalyType {
+  Duplicate = 'duplicate',
+  Outlier = 'outlier',
+  PolicyViolation = 'policy_violation',
+}
+
+/**
+ * Severity levels for anomalies
+ */
+export enum AnomalySeverity {
+  Low = 'low',
+  Medium = 'medium',
+  High = 'high',
+}
+
+/**
+ * Severity levels for budget alerts
+ */
+export enum BudgetAlertSeverity {
+  Warning = 'warning',
+  Critical = 'critical',
+}
+
+/**
+ * Chat message roles
+ */
+export enum ChatRole {
+  User = 'user',
+  Assistant = 'assistant',
+}
+
+// ============================================================
 // Domain Types — mirrors the Supabase relational schema
 // ============================================================
 
@@ -13,7 +77,7 @@ export interface User {
   org_id: string;
   full_name: string;
   email: string;
-  role: 'technician' | 'manager';
+  role: UserRole;
 }
 
 export interface Project {
@@ -21,7 +85,7 @@ export interface Project {
   org_id: string;
   name: string;
   budget: number;
-  status: 'active' | 'completed' | 'on_hold';
+  status: ProjectStatus;
   start_date: string;
 }
 
@@ -46,12 +110,16 @@ export interface Expense {
 // Computed / Aggregated Types for the Dashboard
 // ============================================================
 
+/**
+ * Financial summary for a single project
+ * Includes revenue, expenses, margins, and budget utilization
+ */
 export interface ProjectFinancials {
   project_id: string;
   project_name: string;
   org_name: string;
   budget: number;
-  status: string;
+  status: ProjectStatus;
   total_revenue: number;
   total_expenses: number;
   net_margin: number;
@@ -82,18 +150,34 @@ export interface ExpenseByCategory {
   percentage: number;
 }
 
+/**
+ * Category-wise expense breakdown for a technician
+ * Maps expense category names to total amounts spent
+ */
+export interface CategoryExpenseMap {
+  [category: string]: number;
+}
+
+/**
+ * Spending summary for a single technician
+ * Includes total expenses and per-category breakdown
+ */
 export interface TechnicianSpending {
   user_id: string;
   full_name: string;
   total_expenses: number;
   expense_count: number;
   avg_per_expense: number;
-  categories: Record<string, number>;
+  categories: CategoryExpenseMap;
 }
 
+/**
+ * Detected anomaly in expense data
+ * Can be duplicate billing, statistical outlier, or policy violation
+ */
 export interface AnomalyFlag {
-  type: 'duplicate' | 'outlier' | 'policy_violation';
-  severity: 'low' | 'medium' | 'high';
+  type: AnomalyType;
+  severity: AnomalySeverity;
   description: string;
   technician: string;
   amount: number;
@@ -101,13 +185,17 @@ export interface AnomalyFlag {
   category: string;
 }
 
+/**
+ * Budget overrun alert for a project
+ * Triggered when expenses exceed threshold percentages
+ */
 export interface BudgetAlert {
   project_name: string;
   org_name: string;
   budget: number;
   total_expenses: number;
   utilization_pct: number;
-  severity: 'critical' | 'warning';
+  severity: BudgetAlertSeverity;
 }
 
 export interface DashboardSummary {
@@ -134,19 +222,38 @@ export interface DashboardSummary {
 // Chat Types
 // ============================================================
 
+/**
+ * Message in the chat conversation
+ * Can be from user or AI assistant
+ */
 export interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: ChatRole;
   content: string;
   timestamp: Date;
+  /** True when waiting for AI response */
   isLoading?: boolean;
 }
 
-export interface ChatRequest {
-  message: string;
-  conversationHistory?: Array<{ role: string; content: string }>;
+/**
+ * Simplified conversation history entry for API requests
+ */
+export interface ConversationHistoryEntry {
+  role: string;
+  content: string;
 }
 
+/**
+ * Request payload for chat API
+ */
+export interface ChatRequest {
+  message: string;
+  conversationHistory?: ConversationHistoryEntry[];
+}
+
+/**
+ * Response from chat API including AI-generated text and tools used
+ */
 export interface ChatResponse {
   response: string;
   toolsUsed?: string[];

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Bot, User, Sparkles, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { sendChatMessage } from '../lib/api';
-import type { ChatMessage } from '../types';
+import { ChatRole, type ChatMessage } from '../types';
 
 const SUGGESTED_QUESTIONS = [
   'What is our overall net profit margin across all Home Depot locations?',
@@ -16,7 +16,7 @@ export function ChatInterface() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
-      role: 'assistant',
+      role: ChatRole.Assistant,
       content:
         "I'm your **AI CFO** for Robotic Imaging. I have real-time access to your financial database and can analyze profitability, forecast costs, and audit technician expenses.\n\nTry asking me about profit margins, travel cost trends, or expense anomalies.",
       timestamp: new Date(),
