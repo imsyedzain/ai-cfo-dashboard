@@ -2,18 +2,14 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenerativeAI, type FunctionDeclaration, SchemaType } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
 
-// ============================================================
-// Supabase Client (Server-side with Service Key)
-// ============================================================
+// Server-side Supabase client with service key for full DB access
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_KEY!
 );
 
-// ============================================================
-// Tool Definitions — These are the "skills" we give our AI CFO
-// Each tool maps to a Supabase query the AI can invoke
-// ============================================================
+// Tool definitions for Gemini function calling
+// These let the AI query our database directly
 
 const toolDeclarations: FunctionDeclaration[] = [
   {
@@ -119,9 +115,7 @@ const toolDeclarations: FunctionDeclaration[] = [
   },
 ];
 
-// ============================================================
-// Tool Implementations — Each function queries Supabase
-// ============================================================
+// Tool implementations - each function queries Supabase and returns financial data
 
 async function getFinancialOverview(): Promise<object> {
   const [orgsRes, projectsRes, revenueRes, expensesRes] = await Promise.all([
@@ -280,7 +274,7 @@ async function detectExpenseAnomalies(months: number = 12): Promise<object> {
 
   const anomalies: object[] = [];
 
-  // 1. Detect duplicate billings (same user, same category, same day, similar amount)
+  // Detect duplicates - same user, category, and day with similar amounts
   const expensesByUserDate = new Map<string, typeof expenses>();
   for (const e of expenses) {
     const key = `${e.user_id}-${e.date.substring(0, 10)}-${e.category}`;
@@ -307,7 +301,7 @@ async function detectExpenseAnomalies(months: number = 12): Promise<object> {
     }
   }
 
-  // 2. Detect unusually large purchases (>2 std dev from mean per category)
+  // Find statistical outliers (>2 std dev from category mean)
   const categoryAmounts = new Map<string, number[]>();
   for (const e of expenses) {
     if (!categoryAmounts.has(e.category)) categoryAmounts.set(e.category, []);
@@ -336,7 +330,7 @@ async function detectExpenseAnomalies(months: number = 12): Promise<object> {
     }
   }
 
-  // 3. Detect policy violations (non-standard categories)
+  // Check for non-standard expense categories
   const standardCategories = new Set(['Flight', 'Hotel', 'Meals', 'Equipment']);
   for (const e of expenses) {
     if (!standardCategories.has(e.category)) {
@@ -445,9 +439,7 @@ async function getTravelCostPerSurvey(months: number = 24): Promise<object> {
     }));
 }
 
-// ============================================================
-// Tool Router — Executes the right function based on Gemini's call
-// ============================================================
+// Router to execute the right tool based on Gemini's function call
 
 async function executeTool(name: string, args: Record<string, unknown>): Promise<object> {
   switch (name) {
@@ -470,9 +462,7 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
   }
 }
 
-// ============================================================
-// API Handler — Orchestrates the Gemini conversation loop
-// ============================================================
+// Main API handler - orchestrates Gemini function calling loop
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -529,9 +519,10 @@ When answering questions:
     let result = await chat.sendMessage(message);
     const toolsUsed: string[] = [];
 
-    // Function-calling loop: keep going until the model gives a text response
-    let maxIterations = 10; // Safety limit
-    while (maxIterations > 0) {
+    // Keep calling functions until we get a text response (max 10 iterations for safety)
+    let iterations = 0;
+    while (iterations < 10) {
+      iterations++;
       const candidate = result.response.candidates?.[0];
       if (!candidate) break;
 
@@ -559,7 +550,6 @@ When answering questions:
 
       // Send function results back to the model
       result = await chat.sendMessage(functionResponses);
-      maxIterations--;
     }
 
     const responseText =

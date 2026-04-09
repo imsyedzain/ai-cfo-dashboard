@@ -1,6 +1,6 @@
 # AI CFO Dashboard — Robotic Imaging
 
-A financial intelligence platform for Robotic Imaging's field operations. Built as a technical assessment demonstrating senior-level architecture, real-time AI orchestration via Gemini function calling, and clean data modelling across a relational hierarchy.
+Financial analytics dashboard for field operations. Uses Gemini function calling to let an AI query the database directly instead of stuffing all data in the prompt.
 
 ---
 
@@ -35,10 +35,10 @@ organizations
                     └── users (technician, org_id FK)
 ```
 
-**Key design decisions:**
-- All monetary columns use `NUMERIC(15,2)` — avoids floating-point drift on financial data
-- `CHECK` constraint on `projects.status` — enforces domain integrity at the DB level
-- Composite indexes on `(project_id, date)` for revenue/expenses — fast range aggregations
+**Key choices:**
+- All money columns use `NUMERIC(15,2)` to avoid floating-point issues
+- `CHECK` constraint on project status for data integrity
+- Indexes on project_id and date for fast aggregations
 
 ```sql
 CREATE INDEX idx_expenses_project_id ON expenses(project_id);
@@ -48,13 +48,13 @@ CREATE INDEX idx_revenue_project_id  ON revenue(project_id);
 CREATE INDEX idx_revenue_date        ON revenue(date);
 ```
 
-- Row Level Security (RLS) enabled on all tables — service role key used server-side only, anon key exposed to the frontend has no direct table access.
+- RLS enabled on all tables (service key server-side, anon key for frontend)
 
 ---
 
 ### 2. AI Orchestration — Gemini Function/Tool Calling
 
-This is the core architectural differentiator. Rather than dumping all data into the prompt (which doesn't scale beyond a few hundred rows), the AI CFO uses **structured tool calling** to query the database dynamically.
+Instead of dumping all data into the prompt, the AI uses function calling to query Supabase directly. This scales much better and eliminates hallucinations.
 
 #### How it works
 
@@ -134,7 +134,7 @@ src/
     └── ChatInterface.tsx    # Full chat UI with suggested prompts
 ```
 
-**State management:** Local React state only — no Redux/Zustand needed. Dashboard data is fetched once on mount and cached by the browser. Chat history is held in component state and sent as context on each request.
+**State:** Just local React state. Dashboard fetches once on mount, chat history stays in component state.
 
 ---
 

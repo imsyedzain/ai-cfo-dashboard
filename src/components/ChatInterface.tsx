@@ -41,7 +41,7 @@ export function ChatInterface() {
 
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
-      role: 'user',
+      role: ChatRole.User,
       content: text,
       timestamp: new Date(),
     };
@@ -56,16 +56,17 @@ export function ChatInterface() {
 
     try {
       const response = await sendChatMessage({ message: text, conversationHistory: history });
+      // TODO: could show which tools the AI used (response.toolsUsed) for transparency
       setMessages((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), role: 'assistant', content: response.response, timestamp: new Date() },
+        { id: crypto.randomUUID(), role: ChatRole.Assistant, content: response.response, timestamp: new Date() },
       ]);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
         {
           id: crypto.randomUUID(),
-          role: 'assistant',
+          role: ChatRole.Assistant,
           content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
           timestamp: new Date(),
         },
